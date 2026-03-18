@@ -31,6 +31,8 @@ AS-SRV | File server targeted for ransomware |
 
 ---
 
+![Attack Chain](./evidence/attack_chain.png)
+
 # Investigation Methodology
 
 The investigation followed a standard threat hunting workflow:
