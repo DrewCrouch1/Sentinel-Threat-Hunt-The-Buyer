@@ -243,14 +243,14 @@ T1490 — Inhibit System Recovery
 
 ---
 
-## 🔁 Lateral Movement
+## Lateral Movement
 
-### 🎯 Objective
+### Objective
 Determine how the attacker pivoted from the compromised workstation (**AS-PC2**) to other systems within the environment.
 
 ---
 
-### 🔍 Step 1: Identify SMB-Based Reconnaissance
+### Step 1: Identify SMB-Based Reconnaissance
 
 After initial execution of `scan.exe`, the attacker used **Advanced IP Scanner** to enumerate internal systems over SMB (port 445).
 
@@ -270,7 +270,7 @@ After initial execution of `scan.exe`, the attacker used **Advanced IP Scanner**
 
 ---
 
-### 🔍 Step 2: Identify True Pivot Targets via Named Pipes
+### Step 2: Identify True Pivot Targets via Named Pipes
 
 To distinguish between broad scanning and actual attacker interaction, **Named Pipe telemetry** was analyzed.
 
@@ -297,14 +297,14 @@ To distinguish between broad scanning and actual attacker interaction, **Named P
 
 ---
 
-### ⚠️ Key Insight
+### Key Insight
 
 > Not all scanned hosts are lateral movement targets.  
 > Only systems with `srvsvc` interaction represent **actual attacker engagement over SMB**.
 
 ---
 
-### 🔍 Step 3: Validate Successful Lateral Movement
+### Step 3: Validate Successful Lateral Movement
 
 While multiple systems were probed, only one system showed **post-compromise activity**.
 
@@ -318,7 +318,7 @@ While multiple systems were probed, only one system showed **post-compromise act
 
 ---
 
-### 🔍 Step 4: Evidence of Remote Execution on AS-SRV
+### Step 4: Evidence of Remote Execution on AS-SRV
 
 #### Key Observations
 
@@ -362,7 +362,7 @@ While multiple systems were probed, only one system showed **post-compromise act
 
 ---
 
-### 🧠 Final Assessment
+### Final Assessment
 
 - The attacker performed **network reconnaissance** using `AdvancedIPScanner`
 - SMB scanning alone produced many potential targets (noise)
@@ -377,13 +377,13 @@ While multiple systems were probed, only one system showed **post-compromise act
 
 ---
 
-### ✅ Conclusion
+### Conclusion
 
 > Lateral movement was achieved via SMB using valid credentials, confirmed through `srvsvc` named pipe interaction and subsequent process execution on AS-SRV.
 
 ---
 
-### 🧩 MITRE ATT&CK Mapping
+### MITRE ATT&CK Mapping
 
 | Technique | Description |
 |----------|------------|
@@ -393,14 +393,14 @@ While multiple systems were probed, only one system showed **post-compromise act
 
 ---
 
-## 🔐 Credential Access & Expansion
+## Credential Access & Expansion
 
-### 🎯 Objective
+### Objective
 Determine how credentials were obtained and used throughout the attack.
 
 ---
 
-### 🔍 Findings
+### Findings
 
 - A burst of failed authentication attempts was observed:
   - ~9:21 PM → multiple failed logons
@@ -410,7 +410,7 @@ Determine how credentials were obtained and used throughout the attack.
 
 ---
 
-### 🧠 Analysis
+### Analysis
 
 This indicates the brute force activity was not used for initial access, but instead:
 
@@ -420,13 +420,13 @@ This indicates the brute force activity was not used for initial access, but ins
 
 ---
 
-### ⚠️ Key Insight
+### Key Insight
 
 > The attacker already had valid access prior to brute force activity, as evidenced by earlier SMB pivoting and execution on AS-SRV.
 
 ---
 
-### 🧩 MITRE ATT&CK Mapping
+### MITRE ATT&CK Mapping
 
 | Technique | Description |
 |----------|------------|
